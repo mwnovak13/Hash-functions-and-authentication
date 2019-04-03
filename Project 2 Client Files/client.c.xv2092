@@ -1,0 +1,137 @@
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <stdio.h> 
+#include <sys/socket.h> 
+#include <stdlib.h> 
+#include <netinet/in.h> 
+#include <string.h> 
+#include <math.h>
+#include <gmp.h>
+
+#include "aes_e.h"
+
+#define PORT 5000 
+
+void deriveKeyFromPassphrase(char *, char *);
+
+int main(int argc, char const *argv[]) { 
+    printf("This is Bob's cryptosystem the client.\n");
+    
+	struct sockaddr_in address; 
+
+    int sock = 0; 
+	
+    struct sockaddr_in serv_addr; 
+	
+    char *message = "";
+    
+   
+    char buffer[2048]; 
+	
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) { 
+		printf("\n Socket creation failed \n"); 
+		return -1; 
+	} 
+
+	memset(&serv_addr, '0', sizeof(serv_addr)); 
+
+	serv_addr.sin_family = AF_INET; 
+	serv_addr.sin_port = htons(PORT); 
+	
+	if(inet_pton(AF_INET, "10.0.2.15", &serv_addr.sin_addr) <=0) { 
+		printf("\nInvalid address/ Address not supported \n"); 
+		return -1; 
+	} 
+
+	if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) { 
+		printf("\nConnection Failed \n"); 
+		return -1; 
+	} 
+	else if (connect(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) != 0) { 
+		printf("\nConnected to Alice's cryptosystem over network. \n"); 
+		
+	} 
+	
+
+mpz_t ptext;
+mpz_t ctext;
+mpz_t  n; // public key
+mpz_t  e;
+
+mpz_init(ptext); // plain text
+mpz_init(ctext); // cipher text 
+
+mpz_init_set_str(n, "9516311845790656153499716760847001433441357", 10);
+mpz_init_set_str(e, "65537", 10);
+
+char userpassphrase [16];
+memset(userpassphrase, 0, sizeof(userpassphrase));
+printf("Enter password for Alice.\n");
+fgets(userpassphrase, sizeof(userpassphrase), stdin);
+
+mpz_import(ptext, 16,1,1,0,0,buffer);
+
+//encryption
+//cipher text = message power e mod n
+mpz_powm(ctext, ptext,e,n);
+
+// send cipher text to server
+mpz_export(buffer, NULL, 1,1,0,0,ctext);
+send(sock, buffer, strlen(buffer), 0 ); 
+
+
+printf("Key Exchange is complete.\n");
+    
+       
+    //Get message to send to Alice
+    char passphrase [2048];
+    memset(passphrase, 0, sizeof(passphrase));
+    printf("Enter message for Alice.\n");
+    fgets(passphrase, sizeof(passphrase), stdin);
+    message = passphrase;
+  
+    //Encrypt message 
+        
+    uint8_t key[16] =  { (uint8_t) 0x2b, (uint8_t) 0x7e, (uint8_t) 0x15, (uint8_t) 0x16, (uint8_t) 0x28, (uint8_t) 0xae, (uint8_t) 0xd2, (uint8_t) 0xa6, (uint8_t) 0xab, (uint8_t) 0xf7, (uint8_t) 0x15, (uint8_t) 0x88, (uint8_t) 0x09, (uint8_t) 0xcf, (uint8_t) 0x4f, (uint8_t) 0x3c };
+       
+    deriveKeyFromPassphrase(userpassphrase, key); // eagle 
+    struct AES_ctx ctx;
+    AES_init_ctx(&ctx, key); 
+    AES_encrypt(&ctx, message); //secret message
+    printf("%s\n", message);
+    printf("Message Received and Encrypted.\n");
+    
+    
+    
+    //send cipher text to alice
+    printf("Sending cipher text to Alice.\n");
+    send(sock, message, strlen(message), 0 ); 
+     
+    // read in if transmission was complete
+    read(sock, buffer, 2048); 
+	printf("%s\n", buffer); 
+    	
+    
+    //read message from Alice
+    printf("New Message from Alice.\n");
+    printf("The message is: ");
+    read(sock, buffer, 2048); 
+	printf("%s\n", buffer); 
+    	
+    return 0; 
+       
+    
+} 
+
+void deriveKeyFromPassphrase(char *passphrase, char *key) {
+    int i, j, k;
+    
+    for (i = 0; i < sizeof(key); ++i) {
+        j = (i + 10) % 16;
+        k = (i + 8) % 16;
+        key[i] ^= passphrase[j] ^ key[k] ^ passphrase[k] ^ key[j] ^ passphrase[i];
+    }
+}
+
+
+
