@@ -37,7 +37,7 @@ uint8_t key[16] =        { (uint8_t) 0x2b, (uint8_t) 0x7e, (uint8_t) 0x15, (uint
 	
     char *message = "";
     char *rsamessage = "";
-char *aeskey = "";
+	char *aeskey = "";
     
     char buffer[2048]; 
     char msgbuffer[2048]; 
@@ -94,18 +94,18 @@ memset(buffer, 0, sizeof(buffer));
 //printf("\nEnter RSA Key\n");
 //fgets(buffer, sizeof(buffer), stdin);
 aeskey = "AAAAAAAAAAAAAAA";
-printf("\n Original RSA key is - %s \n",aeskey);
+printf("\n Original AES key is - %s \n",aeskey);
 //rsamessage = buffer;
 
 //Import the value of rsamessage into plain text 
 mpz_import(ptext, strlen(aeskey),1,1,0,0,aeskey);
-gmp_printf("\n Ptext of RSA key is - %Zd \n",ptext);
+gmp_printf("\n Ptext of AES key is - %Zd \n",ptext);
 
 //encrypting the plain text into cipher text using Alice public key - e,n
 //formula - ptext power to e mod n = ctext
 //cipher text = message power e mod n
 mpz_powm(ctext, ptext,e,n);
-gmp_printf("\n Ctext of RSA key is - %Zd \n",ctext);
+gmp_printf("\n Ctext of AES key is - %Zd \n",ctext);
 
 //Exporting the value of cipher text into rsabuffer and printing its value
 memset(rsabuffer, 0, sizeof(rsabuffer));
