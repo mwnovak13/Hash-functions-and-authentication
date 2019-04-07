@@ -37,7 +37,7 @@ uint8_t key[16] =        { (uint8_t) 0x2b, (uint8_t) 0x7e, (uint8_t) 0x15, (uint
 	
     char *message = "";
     char *rsamessage = "";
-	char *aeskey = "";
+char *aeskey = "";
     
     char buffer[2048]; 
     char msgbuffer[2048]; 
@@ -60,7 +60,7 @@ char secretkey[2048];
 	serv_addr.sin_family = AF_INET; 
 	serv_addr.sin_port = htons(PORT); 
 	
-	if(inet_pton(AF_INET, "10.0.2.9", &serv_addr.sin_addr) <=0) { 
+	if(inet_pton(AF_INET, "10.0.2.15", &serv_addr.sin_addr) <=0) { 
 		printf("\nInvalid address/ Address not supported \n"); 
 		return -1; 
 	} 
@@ -94,18 +94,18 @@ memset(buffer, 0, sizeof(buffer));
 //printf("\nEnter RSA Key\n");
 //fgets(buffer, sizeof(buffer), stdin);
 aeskey = "AAAAAAAAAAAAAAA";
-printf("\n Original AES key is - %s \n",aeskey);
+printf("\n Original RSA key is - %s \n",aeskey);
 //rsamessage = buffer;
 
 //Import the value of rsamessage into plain text 
 mpz_import(ptext, strlen(aeskey),1,1,0,0,aeskey);
-gmp_printf("\n Ptext of AES key is - %Zd \n",ptext);
+gmp_printf("\n Ptext of RSA key is - %Zd \n",ptext);
 
 //encrypting the plain text into cipher text using Alice public key - e,n
 //formula - ptext power to e mod n = ctext
 //cipher text = message power e mod n
 mpz_powm(ctext, ptext,e,n);
-gmp_printf("\n Ctext of AES key is - %Zd \n",ctext);
+gmp_printf("\n Ctext of RSA key is - %Zd \n",ctext);
 
 //Exporting the value of cipher text into rsabuffer and printing its value
 memset(rsabuffer, 0, sizeof(rsabuffer));
@@ -157,5 +157,54 @@ AES_init_ctx(&ctx, aeskey);
     	AES_decrypt(&ctx, msgbuffer);
 printf("Message recieved from Alice is - %s \n", msgbuffer);
 printf("\nTransmission is complete.\n");
-    return 0; 
+  
+
+//aeskey = "AAAAAAAAAAAAAAA";
+
+
+
+//Read encrypted message from Alice
+//memset(msgbuffer, 0, sizeof(msgbuffer));
+//read(sock, msgbuffer, 2048);
+
+
+//Decrpted the messgae from Alice
+//struct AES_ctx ctx;
+//AES_init_ctx(&ctx, aeskey);
+//AES_decrypt(&ctx, msgbuffer);
+//printf("Message recieved from Alice is - %s \n", msgbuffer);
+//printf("\nTransmission is complete.\n");
+
+
+//memset(hash, 0, sizeof(hash));
+//memset(msg, 0, sizeof(msg));
+
+//for (i =0; i < strlen(msgbuffer); i++)
+//{  
+//    if(i < 18)
+//    {
+//       hash[j] = msgbuffer[i];
+//        j++;
+//    }
+//     else {
+//        msg[k] = msgbuffer[i];
+//        k++; 
+//    }
+// }
+  
+
+//printf("hash : %s \n", hash);
+//printf("Message recieved from Alice is: %s \n", msg);
+//Decrpted hash message 
+//Importing encypted hash value 
+//mpz_import(ctext, strlen(hash),1,1,0,0,hash);
+
+//decrypting the hash text to plain text 
+//formula - plaintext = ciphertext power e mod n
+//mpz_powm(ptext, ctext,e,n);
+//gmp_printf("\nThe ptext of hash is %Zd \n", ptext);
+//mpz_export(hashvaluetest, NULL, 1,1,0,0,ptext);
+//printf("\nThe original hash  after decryption is %s \n", hashvaluetest);
+
+   return 0; 
 } 
